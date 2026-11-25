@@ -22,6 +22,16 @@ import urllib.request
 from datetime import datetime, timezone
 from pathlib import Path
 
+try:
+    # Use the operating system's certificate store (macOS Keychain, Windows
+    # store). This fixes "self-signed certificate in certificate chain" errors
+    # on corporate networks and VPNs that inspect HTTPS traffic.
+    import truststore
+
+    truststore.inject_into_ssl()
+except ImportError:
+    pass  # pip install truststore, if you hit certificate errors
+
 API_URL = "https://prices.azure.com/api/retail/prices"
 OUTPUT = Path(__file__).with_name("azure_prices.json")
 
@@ -126,6 +136,10 @@ def main() -> int:
         result = fetch(args.region)
     except Exception as exc:  # network errors, API changes
         print(f"Could not fetch Azure prices: {exc}", file=sys.stderr)
+        if "CERTIFICATE_VERIFY_FAILED" in str(exc):
+            print("Fix: run  python3 -m pip install truststore  then try again. "
+                  "Your network inspects HTTPS, and truststore lets Python use your "
+                  "computer's own certificates.", file=sys.stderr)
         print("The app keeps using the estimates in rates.py.", file=sys.stderr)
         return 1
 
