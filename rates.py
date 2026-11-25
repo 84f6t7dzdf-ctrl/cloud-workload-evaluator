@@ -9,6 +9,10 @@ Keeping these tables apart from the calculation means a live pricing feed
 can replace them later without touching the scoring code.
 """
 
+import copy
+import json
+from pathlib import Path
+
 PROVIDERS = ["aws", "azure", "gcp"]
 PROVIDER_NAMES = {"aws": "AWS", "azure": "Azure", "gcp": "Google Cloud"}
 
@@ -23,6 +27,28 @@ RATES = {
     "egress_gb": {"label": "Internet egress per GB", "aws": 0.090, "azure": 0.087, "gcp": 0.120},
 }
 FREE_EGRESS_GB = 100
+
+# Keep the hand-written estimates, then overlay live Azure prices if
+# fetch_prices.py has written azure_prices.json next to this file.
+BASE_RATES = copy.deepcopy(RATES)
+AZURE_LIVE = None  # metadata about the live prices, when loaded
+
+
+def apply_azure_prices(rates: dict, path: Path) -> dict | None:
+    """Overlay live Azure prices from a JSON file onto `rates`. Returns the file's metadata."""
+    if not path.exists():
+        return None
+    try:
+        data = json.loads(path.read_text())
+        for key, value in data["rates"].items():
+            if key in rates:
+                rates[key]["azure"] = float(value)
+        return data
+    except (ValueError, KeyError, TypeError):
+        return None  # a broken file falls back to the estimates
+
+
+AZURE_LIVE = apply_azure_prices(RATES, Path(__file__).with_name("azure_prices.json"))
 
 REGIONS = {
     "us": {"label": "US East", "aws": 1.00, "azure": 1.00, "gcp": 1.00},

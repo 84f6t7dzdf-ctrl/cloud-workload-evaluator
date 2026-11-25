@@ -16,7 +16,8 @@ A Streamlit app that compares AWS, Azure and Google Cloud for a described worklo
 ```
 app.py               Streamlit user interface
 evaluator.py         Pure cost and scoring functions (no Streamlit, unit tested)
-rates.py             Rates, factors and judgement tables (all estimates)
+rates.py             Rates, factors and judgement tables (estimates, plus optional live Azure prices)
+fetch_prices.py      Fetches live Azure prices into azure_prices.json
 tests/               pytest tests
 requirements.txt     Runtime dependencies (used by Streamlit Cloud)
 requirements-dev.txt Test dependencies
@@ -33,6 +34,17 @@ pip install -r requirements.txt -r requirements-dev.txt
 streamlit run app.py             # opens http://localhost:8501
 pytest -q                        # runs the tests
 ```
+
+## Live Azure prices (optional)
+
+`fetch_prices.py` pulls current Azure list prices from the public Azure Retail Prices API. It needs no account or key.
+
+```bash
+python fetch_prices.py            # US East, writes azure_prices.json
+python fetch_prices.py --dry-run  # print the prices only
+```
+
+When `azure_prices.json` exists, `rates.py` uses it for Azure's vCPU, memory and blob storage rates, and the app shows a banner with the fetch date. Azure prices whole VMs, so the script prices a Standard_D2s_v5 (2 vCPU, 8 GB) and splits it into per-vCPU and per-GB rates. Everything else stays as estimates. Commit `azure_prices.json` to use the live prices on Streamlit Cloud, or delete it to go back to the estimates.
 
 ## Deploy to Streamlit Community Cloud (free URL)
 

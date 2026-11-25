@@ -84,6 +84,10 @@ st.title("Cloud Workload Evaluator")
 st.caption("Compare AWS, Azure and Google Cloud for a workload on indicative cost and fit.")
 st.warning("All prices are estimates (list-price approximations, late 2025). "
            "Validate with each provider's pricing calculator before quoting.", icon="⚠️")
+if R.AZURE_LIVE:
+    st.info(f"Azure compute and blob storage prices are live from the Azure Retail Prices API "
+            f"({R.AZURE_LIVE['region']}, fetched {R.AZURE_LIVE['fetched_at']}). "
+            "All other prices are estimates.", icon="🔄")
 
 ranked = evaluate(workload, weights, st.session_state.rates)
 top = ranked[0]
