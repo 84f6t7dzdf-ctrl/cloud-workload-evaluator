@@ -56,3 +56,7 @@ Every push to `main` redeploys the app automatically. Free apps go to sleep afte
 - Pull live prices from the AWS Price List API, Azure Retail Prices API and Google Cloud Billing Catalog API into a nightly cache.
 - Save evaluations per customer, and add sign-in.
 - Use an LLM to turn a free-text workload description into the structured inputs. Keep all numbers in deterministic code.
+
+## Case 2: Token Spend Optimiser
+
+The `token-optimiser/` folder holds a second practice app that analyses company-wide LLM token spend and models savings levers. See [token-optimiser/README.md](token-optimiser/README.md). Deploy on Streamlit with main file path `token-optimiser/app.py`.
